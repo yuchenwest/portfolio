@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Yu Chen — Multilingual Audio Annotator</title>
+  <meta name="description" content="Portfolio for xAI Multilingual Audio AI Tutor role. Native Mandarin & Shanghainese, with accent range across Chinese regional and English varieties." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Linden+Hill:ital@0;1&family=Ovo&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+
+  <style>
+    /* ---------- tokens ---------- */
+    :root {
+      --bg: #fafafa;
+      --bg-elev: #ffffff;
+      --text: #0f1419;
+      --text-muted: #5b6166;
+      --text-dim: #8a9197;
+      --border: #e6e8ea;
+      --border-strong: #d4d8dc;
+      --accent: #26252a;            /* light mode highlight */
+      --accent-soft: #f0ead9;
+      --shadow: 0 1px 0 rgba(15,20,25,.03);
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
+      --space-9: 96px;
+
+      --type-display: 2.75rem;
+      --type-h1: 1.625rem;
+      --type-h2: 1.125rem;
+      --type-body: 0.875rem;
+      --type-small: 0.8125rem;
+      --type-tiny: 0.6875rem;
+
+      --rail-w: 360px;
+      --content-max: 680px;
+
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    html[data-theme="dark"] {
+      --bg: #0e0e0f;
+      --bg-elev: #171719;
+      --text: #e8ebe7;
+      --text-muted: #9aa39d;
+      --text-dim: #6d7670;
+      --border: #1d231f;
+      --border-strong: #2a312c;
+      --accent: #ecedf3;            /* dark mode highlight */
+      --accent-soft: #1e231d;
+      --shadow: 0 1px 0 rgba(0,0,0,.2);
+    }
+
+    /* ---------- base ---------- */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-body);
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      font-feature-settings: 'ss01', 'cv11';
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color 320ms var(--ease-out), color 320ms var(--ease-out);
+    }
+    ::selection { background: var(--accent); color: var(--bg); }
+    html[lang="zh"] body { font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; }
+
+    /* ---------- cursor spotlight (dark mode only) ---------- */
+    .spotlight {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      background: radial-gradient(
+        580px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(255, 248, 232, 0.055) 0%,
+        rgba(255, 248, 232, 0.028) 25%,
+        rgba(255, 248, 232, 0.012) 50%,
+        rgba(255, 248, 232, 0.004) 75%,
+        transparent 95%
+      );
+      transition: opacity 500ms var(--ease-out);
+    }
+    html[data-theme="dark"] .spotlight { opacity: 1; }
+    @media (hover: none), (prefers-reduced-motion: reduce) {
+      .spotlight { display: none; }
+    }
+
+    /* ---------- layout ---------- */
+    .shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: var(--space-9) var(--space-6) var(--space-7);
+      display: grid;
+      grid-template-columns: var(--rail-w) 1fr;
+      gap: 220px;
+    }
+    @media (max-width: 1100px) {
+      .shell {
+        grid-template-columns: 1fr;
+        gap: var(--space-7);
+        padding: var(--space-6) var(--space-5);
+      }
+    }
+
+    /* ---------- top toolbar ---------- */
+    .toolbar {
+      position: fixed;
+      top: var(--space-5);
+      right: var(--space-5);
+      display: flex;
+      gap: var(--space-2);
+      z-index: 50;
+    }
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px;
+      cursor: pointer;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      letter-spacing: 0.06em;
+      transition: border-color 360ms var(--ease-out), background-color 360ms var(--ease-out);
+    }
+    .toggle:hover { border-color: var(--border-strong); }
+    .toggle .opt {
+      min-width: 28px;
+      height: 22px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: var(--text-dim);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 360ms var(--ease-out), background-color 360ms var(--ease-out), min-width 360ms var(--ease-out), max-width 360ms var(--ease-out), padding 360ms var(--ease-out), opacity 280ms var(--ease-out);
+      user-select: none;
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .toggle .opt.active {
+      color: var(--bg);
+      background: var(--accent);
+    }
+
+    /* compact (scrolled) — keep the selected pill looking exactly like normal mode;
+       just stack both opts in the same grid cell so switching is an in-place opacity
+       crossfade with no horizontal slide. Outer frame fades out. */
+    .toolbar.compact .toggle {
+      display: grid;
+      border-color: transparent;
+      background: transparent;
+    }
+    .toolbar.compact .toggle:hover { border-color: transparent; }
+    .toolbar.compact .toggle .opt {
+      grid-area: 1 / 1;
+    }
+    .toolbar.compact .toggle .opt:not(.active) {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ---------- left rail ---------- */
+    .rail {
+      position: sticky;
+      top: var(--space-7);
+      align-self: start;
+      height: calc(100vh - var(--space-9));
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+    @media (max-width: 1100px) {
+      .rail { position: relative; top: 0; height: auto; }
+    }
+
+    .name-block .eyebrow {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: var(--space-3);
+    }
+    .name-block h1 {
+      font-family: 'Linden Hill', 'Songti SC', 'STSong', 'SimSun', serif;
+      font-size: 3.25rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      line-height: 1.02;
+      margin: 0 0 var(--space-3);
+      color: var(--text);
+    }
+    .name-block .role {
+      font-size: var(--type-body);
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: var(--space-3);
+    }
+    .name-block .pitch {
+      font-size: var(--type-small);
+      color: var(--text-muted);
+      max-width: 320px;
+      line-height: 1.55;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav a {
+      display: block;
+      padding: 6px 0;
+      font-size: var(--type-small);
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 200ms var(--ease-out);
+    }
+    .nav a:hover { color: var(--text); }
+    .nav a.active { color: var(--accent); }
+
+    .rail-foot {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .rail-foot a {
+      font-size: var(--type-small);
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 160ms var(--ease-out);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+    }
+    .rail-foot a:hover { color: var(--accent); }
+    .rail-foot a[href] .ph {
+      opacity: 0;
+      transform: translate(-2px, 2px);
+      transition: opacity 180ms var(--ease-out), transform 220ms var(--ease-out);
+      font-size: 0.9em;
+      line-height: 1;
+    }
+    .rail-foot a[href]:hover .ph {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+    .rail-foot .key {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      margin-right: var(--space-3);
+    }
+
+    /* ---------- right content ---------- */
+    .content {
+      max-width: var(--content-max);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-9);
+    }
+    section {
+      scroll-margin-top: var(--space-6);
+    }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .section-head .num {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+    .section-head h2 {
+      font-family: 'Ovo', 'Songti SC', 'STSong', 'SimSun', serif;
+      font-size: var(--type-h1);
+      font-weight: 400;
+      letter-spacing: 0;
+      margin: 0;
+      color: var(--text);
+    }
+    .section-head .rule { display: none; }
+
+    p { margin: 0 0 var(--space-4); color: var(--text-muted); }
+    p.lead { color: var(--text); font-size: 1rem; line-height: 1.65; }
+    strong { color: var(--text); font-weight: 500; }
+
+    /* ---------- audio card ---------- */
+    .audio-stack { display: flex; flex-direction: column; gap: var(--space-4); }
+    .audio-card {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: var(--space-4) var(--space-5);
+      background: var(--bg-elev);
+      transition: border-color 200ms var(--ease-out);
+    }
+    .audio-card:hover { border-color: var(--border-strong); }
+
+    .audio-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-3);
+    }
+    .audio-meta .label {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .audio-title {
+      font-size: var(--type-body);
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .audio-source {
+      font-size: var(--type-small);
+      color: var(--text-muted);
+    }
+    .audio-source em {
+      font-style: normal;
+      color: var(--text-dim);
+    }
+
+    .player {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: var(--space-4);
+      padding-top: var(--space-3);
+      margin-top: var(--space-3);
+      border-top: 1px dashed var(--border);
+    }
+    .play-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 200ms var(--ease-out);
+    }
+    .play-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+    .play-btn:active { transform: scale(0.95); }
+    .play-btn svg { width: 12px; height: 12px; }
+
+    .progress {
+      height: 2px;
+      background: var(--border);
+      border-radius: 999px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .progress .fill {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      background: var(--accent);
+      transition: width 80ms linear;
+    }
+    .time {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- linguistic profile ---------- */
+    .profile {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6) var(--space-5);
+    }
+    @media (max-width: 560px) {
+      .profile { grid-template-columns: 1fr; }
+    }
+    .profile-group h3 {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 0 0 var(--space-3);
+    }
+    .profile-group ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .profile-group li {
+      font-size: var(--type-small);
+      color: var(--text);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-3);
+    }
+    .profile-group li .tag {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      color: var(--text-dim);
+    }
+
+    /* ---------- experience ---------- */
+    .role-block {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: var(--space-5);
+      padding: var(--space-5) 0;
+      border-top: 1px solid var(--border);
+    }
+    .role-block:first-of-type { border-top: 0; padding-top: 0; }
+    .role-time {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      padding-top: 4px;
+    }
+    .role-body h3 {
+      font-size: var(--type-body);
+      font-weight: 500;
+      color: var(--text);
+      margin: 0 0 2px;
+    }
+    .role-body .org {
+      font-size: var(--type-small);
+      color: var(--text-muted);
+      margin-bottom: var(--space-3);
+    }
+    .role-body .org .sep { color: var(--text-dim); margin: 0 6px; }
+    .role-body ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .role-body li {
+      font-size: var(--type-small);
+      color: var(--text-muted);
+      padding-left: var(--space-4);
+      position: relative;
+      line-height: 1.55;
+    }
+    .role-body li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 11px;
+      width: 6px;
+      height: 1px;
+      background: var(--text-dim);
+    }
+    .role-body li strong { color: var(--text); }
+    @media (max-width: 560px) {
+      .role-block { grid-template-columns: 1fr; gap: var(--space-2); }
+    }
+
+    /* ---------- education compact ---------- */
+    .edu-row {
+      display: grid;
+      grid-template-columns: 110px 1fr auto;
+      gap: var(--space-5);
+      padding: var(--space-4) 0;
+      border-top: 1px solid var(--border);
+      font-size: var(--type-small);
+      align-items: baseline;
+    }
+    .edu-row:first-of-type { border-top: 0; padding-top: 0; }
+    .edu-row .time {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-dim);
+    }
+    .edu-row .school { color: var(--text); font-weight: 500; }
+    .edu-row .degree { color: var(--text-muted); margin-top: 2px; font-size: var(--type-small); }
+
+    /* ---------- contact ---------- */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4) var(--space-5);
+    }
+    @media (max-width: 560px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+    .contact-item .label {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .contact-item .value { font-size: var(--type-small); color: var(--text); }
+    .contact-item a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border-strong); transition: color 160ms, border-color 160ms; }
+    .contact-item a:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ---------- footer ---------- */
+    footer {
+      margin-top: var(--space-8);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--border);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--type-tiny);
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ---------- entrance ---------- */
+    @media (prefers-reduced-motion: no-preference) {
+      .fade-up {
+        opacity: 0;
+        transform: translateY(8px);
+        animation: fadeUp 700ms var(--ease-out) forwards;
+      }
+      .fade-up:nth-child(1) { animation-delay: 60ms; }
+      .fade-up:nth-child(2) { animation-delay: 140ms; }
+      .fade-up:nth-child(3) { animation-delay: 220ms; }
+      .fade-up:nth-child(4) { animation-delay: 300ms; }
+      @keyframes fadeUp {
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+
+    /* hide elements not in active language */
+    [data-lang-only="en"] { display: revert; }
+    [data-lang-only="zh"] { display: none; }
+    html[data-lang="zh"] [data-lang-only="en"] { display: none; }
+    html[data-lang="zh"] [data-lang-only="zh"] { display: revert; }
+
+    /* smooth cross-fade for theme / language swaps via the View Transitions API */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 360ms;
+      animation-timing-function: var(--ease-out);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="spotlight" aria-hidden="true"></div>
+
+  <div class="toolbar" id="toolbar">
+    <div id="toggle-lang" class="toggle" role="button" tabindex="0" aria-label="Toggle language">
+      <span class="opt" data-lang-val="zh">中</span><span class="opt" data-lang-val="en">Eng</span>
+    </div>
+    <div id="toggle-theme" class="toggle" role="button" tabindex="0" aria-label="Toggle theme">
+      <span class="opt" data-theme-val="light" aria-label="Light">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8h1.5M13 8h1.5M3.4 3.4l1.05 1.05M11.55 11.55l1.05 1.05M3.4 12.6l1.05-1.05M11.55 4.45l1.05-1.05"/></svg>
+      </span><span class="opt" data-theme-val="dark" aria-label="Dark">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z"/></svg>
+      </span>
+    </div>
+  </div>
+
+  <main class="shell">
+
+    <!-- ============ LEFT RAIL ============ -->
+    <aside class="rail">
+      <div class="name-block fade-up">
+        <div class="eyebrow">
+          <span data-lang-only="en">Portfolio · xAI Audio Tutor</span>
+          <span data-lang-only="zh">作品集 · xAI 音频导师</span>
+        </div>
+        <h1>
+          <span data-lang-only="en">Yu Chen</span>
+          <span data-lang-only="zh">陈宇</span>
+        </h1>
+        <div class="role">
+          <span data-lang-only="en">Multilingual Audio Annotator</span>
+          <span data-lang-only="zh">多语种音频标注员</span>
+        </div>
+        <div class="pitch">
+          <span data-lang-only="en">Native Mandarin &amp; Shanghainese. A trained ear for accent variation across Chinese regions and English varieties. Three years of high-volume, high-accuracy document review work.</span>
+          <span data-lang-only="zh">普通话与上海话母语者。能识别和模仿中国各地方言以及多国英语口音。三年高强度、高准确率的文件审查经验。</span>
+        </div>
+      </div>
+
+      <nav class="nav fade-up" id="nav">
+        <a href="#intro"><span data-lang-only="en">Intro</span><span data-lang-only="zh">介绍</span></a>
+        <a href="#native"><span data-lang-only="en">Voice Samples</span><span data-lang-only="zh">声音样本</span></a>
+        <a href="#profile"><span data-lang-only="en">Linguistic Profile</span><span data-lang-only="zh">语言能力</span></a>
+        <a href="#experience"><span data-lang-only="en">Experience</span><span data-lang-only="zh">工作经历</span></a>
+        <a href="#education"><span data-lang-only="en">Education</span><span data-lang-only="zh">教育背景</span></a>
+        <a href="#contact"><span data-lang-only="en">Contact</span><span data-lang-only="zh">联系</span></a>
+      </nav>
+
+      <div class="rail-foot fade-up">
+        <a href="mailto:west.yuchen@gmail.com">west.yuchen@gmail.com<i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+        <a href="https://www.linkedin.com/in/yu-chen-west/" target="_blank" rel="noopener">linkedin.com/in/yu-chen-west<i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+        <a><span data-lang-only="en">Vancouver, BC · Pacific Time</span><span data-lang-only="zh">温哥华 · 太平洋时区</span></a>
+      </div>
+    </aside>
+
+    <!-- ============ RIGHT CONTENT ============ -->
+    <div class="content">
+
+      <!-- 01 INTRO -->
+      <section id="intro">
+        <div class="section-head">
+          
+          <h2>
+            <span data-lang-only="en">Intro</span>
+            <span data-lang-only="zh">介绍</span>
+          </h2>
+          <span class="rule"></span>
+        </div>
+
+        <div data-lang-only="en">
+          <p class="lead">For xAI's Multilingual Audio AI Tutor role, I bring a <strong>rare combination</strong> for Chinese-language audio work: native Mandarin paired with native-level Shanghainese, plus lifelong exposure to the Gan-speaking region of Shangrao, Jiangxi, where I was born.</p>
+          <p>Beyond fluency, I have a trained ear for <strong>accent variation</strong> — I can identify Chinese regional accents across the country, and distinguish English varieties from speakers of different national backgrounds. I also have a natural ability to reproduce these accents, which I demonstrate in the dubbing samples below.</p>
+          <p>Professionally, I spend my days on <strong>high-volume document review</strong> as an Immigration Case Manager: ~46 packets/month, &lt;2% QA exceptions annually, 24-hour first-response SLA. That precision discipline is what I'd bring to audio annotation work.</p>
+        </div>
+        <div data-lang-only="zh">
+          <p class="lead">本作品集为 xAI 多语种音频 AI 导师岗位准备。我具备中文音频工作中较为<strong>稀缺的组合</strong>：普通话母语，上海话达到母语水平，并有出生地江西上饶（赣语区）的长期方言接触。</p>
+          <p>语言能力之外，我对<strong>口音变化</strong>有训练有素的辨识力——能识别中国各省份的地方口音，也能区分不同国家英语使用者的口音特征。我同时具备自然的口音模仿能力，下方的配音样本可作为佐证。</p>
+          <p>专业背景方面，我目前作为移民案件经理，从事<strong>高强度文件审查</strong>工作：每月约 46 份案件包，年度 QA 误差率低于 2%，24 小时首次响应 SLA。这种精度训练正是我能带入音频标注工作的核心能力。</p>
+        </div>
+      </section>
+
+      <!-- 02 NATIVE VOICE -->
+      <section id="native">
+        <div class="section-head">
+          
+          <h2>
+            <span data-lang-only="en">Voice Samples</span>
+            <span data-lang-only="zh">声音样本</span>
+          </h2>
+          <span class="rule"></span>
+        </div>
+
+        <p data-lang-only="en">Three reference recordings of my own native speech — read naturally, no performance affect. Same passage used across samples for direct phonological comparison.</p>
+        <p data-lang-only="zh">三段我自己母语口音的参考录音，自然朗读，无表演成分。三段使用同一段文字，便于直接进行音系层面的对比。</p>
+
+        <div class="audio-stack">
+
+          <div class="audio-card" data-audio="audio/native-mandarin.mp3">
+            <div class="audio-meta">
+              <div>
+                <div class="audio-title">
+                  <span data-lang-only="en">Standard Mandarin · 普通话</span>
+                  <span data-lang-only="zh">普通话 · Mandarin</span>
+                </div>
+                <div class="audio-source">
+                  <span data-lang-only="en"><em>Reference reading · natural delivery</em></span>
+                  <span data-lang-only="zh"><em>参考朗读 · 自然语调</em></span>
+                </div>
+              </div>
+              
+            </div>
+            <div class="player">
+              <button class="play-btn" aria-label="Play"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.5v9l8-4.5z"/></svg></button>
+              <div class="progress"><div class="fill"></div></div>
+              <span class="time">0:00</span>
+            </div>
+          </div>
+
+          <div class="audio-card" data-audio="audio/native-english.mp3">
+            <div class="audio-meta">
+              <div>
+                <div class="audio-title">
+                  <span data-lang-only="en">English · 英语</span>
+                  <span data-lang-only="zh">英语 · English</span>
+                </div>
+                <div class="audio-source">
+                  <span data-lang-only="en"><em>Conversational · professional fluency</em></span>
+                  <span data-lang-only="zh"><em>会话 · 工作流利程度</em></span>
+                </div>
+              </div>
+
+            </div>
+            <div class="player">
+              <button class="play-btn" aria-label="Play"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.5v9l8-4.5z"/></svg></button>
+              <div class="progress"><div class="fill"></div></div>
+              <span class="time">0:00</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 04 PROFILE -->
+      <section id="profile">
+        <div class="section-head">
+          
+          <h2>
+            <span data-lang-only="en">Linguistic Profile</span>
+            <span data-lang-only="zh">语言能力</span>
+          </h2>
+          <span class="rule"></span>
+        </div>
+
+        <div class="profile">
+
+          <div class="profile-group">
+            <h3 data-lang-only="en">Languages</h3>
+            <h3 data-lang-only="zh">语言</h3>
+            <ul>
+              <li>
+                <span data-lang-only="en">Mandarin Chinese</span>
+                <span data-lang-only="zh">普通话</span>
+                <span class="tag">Native</span>
+              </li>
+              <li>
+                <span data-lang-only="en">Shanghainese</span>
+                <span data-lang-only="zh">上海话</span>
+                <span class="tag">Native-level</span>
+              </li>
+              <li>
+                <span data-lang-only="en">Shangrao / Gan</span>
+                <span data-lang-only="zh">上饶话 / 赣语</span>
+                <span class="tag">Conversational</span>
+              </li>
+              <li>
+                <span data-lang-only="en">English</span>
+                <span data-lang-only="zh">英语</span>
+                <span class="tag">B2 · Professional</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="profile-group">
+            <h3 data-lang-only="en">Can Identify</h3>
+            <h3 data-lang-only="zh">能识别</h3>
+            <ul>
+              <li><span data-lang-only="en">CN regional accents (Northeastern / Sichuan-Chongqing / Cantonese / Min / Shanghainese / Shaanxi …)</span><span data-lang-only="zh">中文地方口音（东北 / 川渝 / 粤 / 闽 / 沪 / 陕 等）</span></li>
+              <li><span data-lang-only="en">EN by national origin (US / UK / IN / AU / SG …)</span><span data-lang-only="zh">英语国别口音（美 / 英 / 印 / 澳 / 新加坡 等）</span></li>
+              <li><span data-lang-only="en">Disfluencies, prosodic stress, intonation contours</span><span data-lang-only="zh">不流利现象、韵律重音、语调变化</span></li>
+            </ul>
+          </div>
+
+          <div class="profile-group">
+            <h3 data-lang-only="en">Can Produce</h3>
+            <h3 data-lang-only="zh">能模仿</h3>
+            <ul>
+              <li><span data-lang-only="en">Selected CN regional accents</span><span data-lang-only="zh">部分中文地方口音</span></li>
+              <li><span data-lang-only="en">Selected EN varieties</span><span data-lang-only="zh">部分英语口音变体</span></li>
+              <li><span data-lang-only="en">Natural mimicry of unfamiliar accents on exposure</span><span data-lang-only="zh">接触后能自然模仿未练习过的口音</span></li>
+            </ul>
+          </div>
+
+          <div class="profile-group">
+            <h3 data-lang-only="en">Relevant Practice</h3>
+            <h3 data-lang-only="zh">相关实践</h3>
+            <ul>
+              <li><span data-lang-only="en">High-accuracy transcription &amp; review (legal documents)</span><span data-lang-only="zh">高精度转录与审阅（法律文件）</span></li>
+              <li><span data-lang-only="en">Independent judgment on ambiguous source material</span><span data-lang-only="zh">对模糊原始材料的独立判断</span></li>
+              <li><span data-lang-only="en">Cross-timezone async collaboration</span><span data-lang-only="zh">跨时区异步协作</span></li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 05 EXPERIENCE -->
+      <section id="experience">
+        <div class="section-head">
+          
+          <h2>
+            <span data-lang-only="en">Experience</span>
+            <span data-lang-only="zh">工作经历</span>
+          </h2>
+          <span class="rule"></span>
+        </div>
+
+        <div class="role-block">
+          <div class="role-time">2023 — Now</div>
+          <div class="role-body">
+            <h3>
+              <span data-lang-only="en">Immigration Case Manager</span>
+              <span data-lang-only="zh">移民案件经理</span>
+            </h3>
+            <div class="org">
+              <span data-lang-only="en">Pacston <span class="sep">·</span> Burnaby, BC <span class="sep">·</span> Hybrid</span>
+              <span data-lang-only="zh">Pacston <span class="sep">·</span> 本拿比 BC <span class="sep">·</span> 混合办公</span>
+            </div>
+            <ul>
+              <li data-lang-only="en"><strong>Throughput &amp; QA:</strong> ~46 form packets per month, &lt;2% annual QA exceptions, 24-hour first-response SLA — every month on target.</li>
+              <li data-lang-only="zh"><strong>产出与质量：</strong>每月约 46 份案件包，年度 QA 误差率 &lt;2%，24 小时首次响应 SLA — 每月达标。</li>
+              <li data-lang-only="en"><strong>Scope:</strong> EB-2 NIW &amp; EB-1A across prep-to-filing — forms (I-140, I-485, ETA-9089, I-765, I-131), evidence audits, client updates.</li>
+              <li data-lang-only="zh"><strong>业务范围：</strong>EB-2 NIW 与 EB-1A 全流程 — 表单（I-140、I-485、ETA-9089、I-765、I-131）、证据审核、客户更新。</li>
+              <li data-lang-only="en"><strong>Process work:</strong> built checklists, CMS validations, workflow refinements that reduced rework and kept filings on time.</li>
+              <li data-lang-only="zh"><strong>流程建设：</strong>编写检查清单、CMS 校验规则、工作流优化，减少返工，保证按时提交。</li>
+              <li data-lang-only="en"><strong>Transferable:</strong> attorney-reviewed drafts under volume pressure → annotation rigor on ambiguous material.</li>
+              <li data-lang-only="zh"><strong>可迁移能力：</strong>在产量压力下完成律师审阅级初稿 → 适配模糊材料的标注严谨度要求。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="role-block">
+          <div class="role-time">2018 — 2022</div>
+          <div class="role-body">
+            <h3>
+              <span data-lang-only="en">Vice General Manager</span>
+              <span data-lang-only="zh">副总经理</span>
+            </h3>
+            <div class="org">
+              <span data-lang-only="en">Shanghai Yuan Dian Food <span class="sep">·</span> Pudong, Shanghai</span>
+              <span data-lang-only="zh">上海源典食品 <span class="sep">·</span> 上海浦东</span>
+            </div>
+            <ul>
+              <li data-lang-only="en">Operations and supplier coordination across a four-year tenure; native daily exposure to Shanghainese in a professional setting.</li>
+              <li data-lang-only="zh">四年间负责运营管理与供应商协调；专业环境中持续浸润上海话使用场景。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="role-block">
+          <div class="role-time">2016 — 2018</div>
+          <div class="role-body">
+            <h3>
+              <span data-lang-only="en">Earlier roles in finance &amp; compliance</span>
+              <span data-lang-only="zh">早期金融与合规经历</span>
+            </h3>
+            <div class="org">
+              <span data-lang-only="en">Metfortis Investment Holding Group <span class="sep">·</span> DBS Bank <span class="sep">·</span> Shanghai</span>
+              <span data-lang-only="zh">梅特福蒂斯投资集团 <span class="sep">·</span> 星展银行 <span class="sep">·</span> 上海</span>
+            </div>
+            <ul>
+              <li data-lang-only="en">Investment Associate (2017–18) and Compliance Intern (2016). Built early detail-orientation that later transferred to legal document work.</li>
+              <li data-lang-only="zh">投资分析师（2017–18）与合规实习生（2016）。早期培养的细节敏感度后续迁移至法律文件工作。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 EDUCATION -->
+      <section id="education">
+        <div class="section-head">
+          
+          <h2>
+            <span data-lang-only="en">Education</span>
+            <span data-lang-only="zh">教育背景</span>
+          </h2>
+          <span class="rule"></span>
+        </div>
+
+        <div class="edu-row">
+          <div class="time">2015 — 2016</div>
+          <div>
+            <div class="school">Pepperdine University · Graziadio School</div>
+            <div class="degree">
+              <span data-lang-only="en">Master's degree · International / Global Studies</span>
+              <span data-lang-only="zh">硕士 · 国际研究</span>
+            </div>
+          </div>
+          <div class="time">CA, USA</div>
+        </div>
+
+        <div class="edu-row">
+          <div class="time">2011 — 2015</div>
+          <div>
+            <div class="school">Indiana University Bloomington</div>
+            <div class="degree">
+              <span data-lang-only="en">Bachelor's degree · Economics</span>
+              <span data-lang-only="zh">学士 · 经济学</span>
+            </div>
+          </div>
+          <div class="time">IN, USA</div>
+        </div>
+      </section>
+
+      <!-- 07 CONTACT -->
+      <section id="contact">
+        <div class="section-head">
+          
+          <h2>
+            <span data-lang-only="en">Contact &amp; Availability</span>
+            <span data-lang-only="zh">联系方式与可用性</span>
+          </h2>
+          <span class="rule"></span>
+        </div>
+
+        <div class="contact-grid">
+          <div class="contact-item">
+            <div class="label">Email</div>
+            <div class="value"><a href="mailto:west.yuchen@gmail.com">west.yuchen@gmail.com</a></div>
+          </div>
+          <div class="contact-item">
+            <div class="label">LinkedIn</div>
+            <div class="value"><a href="https://www.linkedin.com/in/yu-chen-west/" target="_blank" rel="noopener">in/yu-chen-west</a></div>
+          </div>
+          <div class="contact-item">
+            <div class="label">
+              <span data-lang-only="en">Location</span>
+              <span data-lang-only="zh">所在地</span>
+            </div>
+            <div class="value">
+              <span data-lang-only="en">Vancouver, BC · Pacific Time (PT)</span>
+              <span data-lang-only="zh">加拿大 温哥华 · 太平洋时区</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="label">
+              <span data-lang-only="en">Availability</span>
+              <span data-lang-only="zh">可用性</span>
+            </div>
+            <div class="value">
+              <span data-lang-only="en">Contractor · 10+ hrs/week · remote-ready</span>
+              <span data-lang-only="zh">合约制 · 每周 10 小时以上 · 可远程</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="label">
+              <span data-lang-only="en">Setup</span>
+              <span data-lang-only="zh">设备</span>
+            </div>
+            <div class="value">
+              <span data-lang-only="en">macOS 14 · meets device requirement</span>
+              <span data-lang-only="zh">macOS 14 · 符合设备要求</span>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="label">
+              <span data-lang-only="en">Work Authorization</span>
+              <span data-lang-only="zh">工作授权</span>
+            </div>
+            <div class="value">
+              <span data-lang-only="en">Canada · international contractor</span>
+              <span data-lang-only="zh">加拿大 · 国际合约</span>
+            </div>
+          </div>
+        </div>
+
+        <footer>
+          <span>Yu Chen · 2026</span>
+          <span data-lang-only="en">Built for the xAI Audio Tutor application</span>
+          <span data-lang-only="zh">为 xAI 音频导师申请定制</span>
+        </footer>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    const html = document.documentElement;
+
+    // run a state change inside the View Transitions API when available, falling back to direct
+    const smoothSwap = (fn) => {
+      if (document.startViewTransition) document.startViewTransition(fn);
+      else fn();
+    };
+
+    // ---------- theme ----------
+    const themeToggle = document.getElementById('toggle-theme');
+    const themeOpts = themeToggle.querySelectorAll('.opt');
+    const applyTheme = (mode) => {
+      html.setAttribute('data-theme', mode);
+      themeOpts.forEach(o => o.classList.toggle('active', o.dataset.themeVal === mode));
+      try { localStorage.setItem('yc-theme', mode); } catch(e){}
+    };
+    const setTheme = (mode, animate = true) => animate ? smoothSwap(() => applyTheme(mode)) : applyTheme(mode);
+    const savedTheme = (() => { try { return localStorage.getItem('yc-theme'); } catch(e){ return null; } })();
+    setTheme(savedTheme || 'dark', false);
+    const toggleTheme = () => setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    themeToggle.addEventListener('click', toggleTheme);
+    themeToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); }
+    });
+
+    // ---------- language ----------
+    const langToggle = document.getElementById('toggle-lang');
+    const langOpts = langToggle.querySelectorAll('.opt');
+    const applyLang = (lang) => {
+      html.setAttribute('data-lang', lang);
+      html.setAttribute('lang', lang === 'zh' ? 'zh' : 'en');
+      langOpts.forEach(o => o.classList.toggle('active', o.dataset.langVal === lang));
+      try { localStorage.setItem('yc-lang', lang); } catch(e){}
+    };
+    const setLang = (lang, animate = true) => animate ? smoothSwap(() => applyLang(lang)) : applyLang(lang);
+    const savedLang = (() => { try { return localStorage.getItem('yc-lang'); } catch(e){ return null; } })();
+    setLang(savedLang || 'en', false);
+    const toggleLang = () => setLang(html.getAttribute('data-lang') === 'en' ? 'zh' : 'en');
+    langToggle.addEventListener('click', toggleLang);
+    langToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLang(); }
+    });
+
+    // ---------- audio players ----------
+    document.querySelectorAll('.audio-card').forEach(card => {
+      const src = card.getAttribute('data-audio');
+      const btn = card.querySelector('.play-btn');
+      const progress = card.querySelector('.progress');
+      const fill = card.querySelector('.fill');
+      const timeEl = card.querySelector('.time');
+
+      // build audio only when needed; if file missing, button shows label
+      let audio = null;
+      let loaded = false;
+
+      const fmt = (s) => {
+        if (!isFinite(s)) return '0:00';
+        const m = Math.floor(s/60), r = Math.floor(s%60);
+        return m + ':' + (r < 10 ? '0' : '') + r;
+      };
+
+      const setIcon = (playing) => {
+        btn.innerHTML = playing
+          ? '<svg viewBox="0 0 12 12" fill="currentColor"><rect x="3" y="2" width="2" height="8"/><rect x="7" y="2" width="2" height="8"/></svg>'
+          : '<svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.5v9l8-4.5z"/></svg>';
+      };
+
+      btn.addEventListener('click', () => {
+        if (!audio) {
+          audio = new Audio(src);
+          audio.addEventListener('loadedmetadata', () => {
+            timeEl.textContent = fmt(audio.duration);
+            loaded = true;
+          });
+          audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+              fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+              timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+            }
+          });
+          audio.addEventListener('ended', () => {
+            setIcon(false);
+            fill.style.width = '0%';
+            timeEl.textContent = fmt(audio.duration);
+          });
+          audio.addEventListener('error', () => {
+            timeEl.textContent = '— missing —';
+            setIcon(false);
+          });
+        }
+        if (audio.paused) {
+          // pause all other audio
+          document.querySelectorAll('audio').forEach(a => { if (a !== audio) a.pause(); });
+          document.querySelectorAll('.audio-card .play-btn').forEach(b => {
+            if (b !== btn) b.innerHTML = '<svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.5v9l8-4.5z"/></svg>';
+          });
+          audio.play().then(() => setIcon(true)).catch(() => {
+            timeEl.textContent = '— missing —';
+          });
+        } else {
+          audio.pause();
+          setIcon(false);
+        }
+      });
+
+      progress.addEventListener('click', (e) => {
+        if (!audio || !audio.duration) return;
+        const rect = progress.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = ratio * audio.duration;
+      });
+    });
+
+    // ---------- toolbar compact on scroll (hysteresis so it doesn't flicker at the threshold) ----------
+    const toolbar = document.getElementById('toolbar');
+    const COMPACT_ON = 60;
+    const COMPACT_OFF = 24;
+    const updateToolbar = () => {
+      const isCompact = toolbar.classList.contains('compact');
+      const y = window.scrollY;
+      if (!isCompact && y > COMPACT_ON) toolbar.classList.add('compact');
+      else if (isCompact && y < COMPACT_OFF) toolbar.classList.remove('compact');
+    };
+    document.addEventListener('scroll', updateToolbar, { passive: true });
+    updateToolbar();
+
+    // ---------- scroll spy ----------
+    const navLinks = document.querySelectorAll('#nav a');
+    const sections = Array.from(document.querySelectorAll('section[id]'));
+    const onScroll = () => {
+      const y = window.scrollY + 120;
+      let active = sections[0].id;
+      for (const s of sections) {
+        if (s.offsetTop <= y) active = s.id;
+      }
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + active);
+      });
+    };
+    document.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // ---------- cursor spotlight ----------
+    const spotlight = document.querySelector('.spotlight');
+    let rafId = null;
+    document.addEventListener('mousemove', (e) => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        spotlight.style.setProperty('--mx', e.clientX + 'px');
+        spotlight.style.setProperty('--my', e.clientY + 'px');
+        rafId = null;
+      });
+    });
+  </script>
+
+</body>
+</html>
